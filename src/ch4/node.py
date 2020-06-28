@@ -20,7 +20,7 @@ def minerThread():
     while True:
         currentHead = getHead()
         currentLevel = currentHead["header"]["level"]
-        print(currentHead)
+        # print(currentHead)
         coinbaseTx = createCoinbaseTx(
             pk=myKey["pk"],
             sk=myKey["sk"],
