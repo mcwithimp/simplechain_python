@@ -71,96 +71,21 @@ def generateKeys(alias: str):
     return keyPair
 
 
-test = [
-    {
-        "alias": "ada",
-        "sk": "fc487a5adcb6fe82ac8de12f2c6cffa2b395bae0b694591c1a9ef973552e4030",
-        "pk": "c621e37b2be6e83ce77b539a90f6fc99a218986499a5b7565283eb9ec369f5c08f527af268fa9a274613804f8773b042e1866a84c705ddc18bb6f05598d7456a",
-        "pkh": "1G8RdTC6nSmuLVkBzkWEaWzqqsqM8f98cU"
-    },
-    {
-        "alias": "ada2",
-        "sk": "41b141e91e322881426fb36d1c7249248203265233966985526b4b210ae0bc61",
-        "pk": "adf1d1c5664bbf34319f3b5d116cd0a27c3cfe02aa401cf551b7c44eea1c74e6e9b037a54c43440bb8b60e40a1a08e618be0fd8a3f0db178ef6007fecb754296",
-        "pkh": "1Lnwdifen3szZbG1srBwBBYA3gvVaBtXaC"
-    }
-]
-
-test = {
-    'txId': '7f1058266c8326acf223bc8ed79eca6960b792601ae22956024376e3bdcf72dd',
-    'txIns': [
-        {
-            'txOutId':
-            'da2f1e82a300e75433bf416b0765aa29b3129bf68bed3a22f1d163c24c8dbffc',
-            'txOutIdx': 0,
-        },
-        {
-            'txOutId':
-            'f25cd44a098a0f9622ade2eb7be315b7cf86d23efc7131543cc57e1f61818e91',
-            'txOutIdx': 0,
-        },
-        {
-            'txOutId':
-            '1bf86b22ce8a58469d90111f1967675b925ab3dcbbdf5b016ec4d68953697b1b',
-            'txOutIdx': 0,
-        },
-        {
-            'txOutId':
-            '933a8f94ef9c69a87fd2f35a558cae28f84c439c08e2b74423d90b8e81d567b7',
-            'txOutIdx': 0,
-        },
-    ],
-    'txOuts': [
-        {
-            'address': '1LpUToTfVj6LVkwpyUnrFEXr3sNcdtRPkX',
-            'amount': '153',
-        },
-        {
-            'address': '1LpUToTfVj6LVkwpyUnrFEXr3sNcdtRPkX',
-            'amount': 47,
-        },
-    ],
-    'signature':
-    '0304402201dc42e53666a813981257bb013999f5e6c8dc59e68c181d140a4a4640c831661022016c6a398a54a5054ee0d82b18de987d31bb953a3ef957278be8010063f343370',
-}
-
-# verifying_key.verify(txin.unlock_sig, spend_msg)
-
-
 def signTransaction(sk: str, txHash: str) -> str:
     sk = bytes.fromhex(sk)
     sk = SigningKey.from_string(sk, curve=SECP256k1)
     signature = sk.sign(bytes.fromhex(txHash))
-    print(signature)
-    # signature = sk.sign_deterministic(
-    #     bytes.fromhex(txHash),
-    #     sigencode=sigencode_der)
     return signature.hex()
 
 
-# sig = signTransaction(
-#     "41b141e91e322881426fb36d1c7249248203265233966985526b4b210ae0bc61",
-#     test['txId'])
-
-# pk = sk.verifying_key
-# verified = pk.verify(signature, bytes.fromhex(txHash))
-
-
 def verifyTxSignature(txHash: str, signature: str, pk: str) -> bool:
-    pk = bytes.fromhex(pk)
-    pk = VerifyingKey.from_string(pk, curve=SECP256k1)
-
     try:
+        pk = bytes.fromhex(pk)
+        pk = VerifyingKey.from_string(pk, curve=SECP256k1)
         pk.verify(bytes.fromhex(signature), bytes.fromhex(txHash))
         return True
     except BaseException:
         return False
-
-
-# verifyTxSignature(
-#     test['txId'],
-#     sig,
-#     'adf1d1c5664bbf34319f3b5d116cd0a27c3cfe02aa401cf551b7c44eea1c74e6e9b037a54c43440bb8b60e40a1a08e618be0fd8a3f0db178ef6007fecb754296')
 
 
 def verifyPkh(pkh: str) -> bool:
@@ -173,3 +98,79 @@ def verifyPkh(pkh: str) -> bool:
         return True
     except BaseException:
         return False
+
+
+def test():
+    keys = [
+        {
+            "alias": "ada",
+            "sk": "fc487a5adcb6fe82ac8de12f2c6cffa2b395bae0b694591c1a9ef973552e4030",
+            "pk": "c621e37b2be6e83ce77b539a90f6fc99a218986499a5b7565283eb9ec369f5c08f527af268fa9a274613804f8773b042e1866a84c705ddc18bb6f05598d7456a",
+            "pkh": "1G8RdTC6nSmuLVkBzkWEaWzqqsqM8f98cU"
+        },
+        {
+            "alias": "ada2",
+            "sk": "41b141e91e322881426fb36d1c7249248203265233966985526b4b210ae0bc61",
+            "pk": "adf1d1c5664bbf34319f3b5d116cd0a27c3cfe02aa401cf551b7c44eea1c74e6e9b037a54c43440bb8b60e40a1a08e618be0fd8a3f0db178ef6007fecb754296",
+            "pkh": "1Lnwdifen3szZbG1srBwBBYA3gvVaBtXaC"
+        }
+    ]
+
+    testTx = {
+        'txId': '7f1058266c8326acf223bc8ed79eca6960b792601ae22956024376e3bdcf72dd',
+        'txIns': [
+            {
+                'txOutId':
+                'da2f1e82a300e75433bf416b0765aa29b3129bf68bed3a22f1d163c24c8dbffc',
+                'txOutIdx': 0,
+            },
+            {
+                'txOutId':
+                'f25cd44a098a0f9622ade2eb7be315b7cf86d23efc7131543cc57e1f61818e91',
+                'txOutIdx': 0,
+            },
+            {
+                'txOutId':
+                '1bf86b22ce8a58469d90111f1967675b925ab3dcbbdf5b016ec4d68953697b1b',
+                'txOutIdx': 0,
+            },
+            {
+                'txOutId':
+                '933a8f94ef9c69a87fd2f35a558cae28f84c439c08e2b74423d90b8e81d567b7',
+                'txOutIdx': 0,
+            },
+        ],
+        'txOuts': [
+            {
+                'address': '1LpUToTfVj6LVkwpyUnrFEXr3sNcdtRPkX',
+                'amount': '153',
+            },
+            {
+                'address': '1LpUToTfVj6LVkwpyUnrFEXr3sNcdtRPkX',
+                'amount': 47,
+            },
+        ],
+        'signature': '',
+        'pk': ''
+    }
+
+    signature = signTransaction(
+        keys[0]['sk'],
+        testTx['txId'])
+
+    verified = verifyTxSignature(
+        testTx['txId'],
+        signature,
+        keys[0]['pk'])
+
+    print(verified)
+
+    verified = verifyTxSignature(
+        testTx['txId'],
+        signature,
+        keys[1]['pk'])
+
+    print(verified)
+
+
+# test()
