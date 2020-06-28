@@ -52,10 +52,12 @@ def calculateDifficulty(header: BlockHeader):
     #     return nextDifficulty
 
     level = header.level
+    timestamp = header.timestamp
     lastCalculatedBlock = blockchain[level - difficultyPeriod]
     lastCalculatedDifficulty = lastCalculatedBlock.difficulty
 
-    previousTarget =
+    previousTarget = maxDifficulty / lastCalculatedDifficulty
+    timeDifference =
 
     return header.difficulty
 

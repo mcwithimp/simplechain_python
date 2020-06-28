@@ -29,7 +29,8 @@ class Block(NamedTuple):
     header: BlockHeader
 
     # 트랜잭션
-    transactions: Iterable[Transaction]
+<< << << < HEAD
+transactions: Iterable[Transaction]
 
 
 blockchain: Iterable[Block] = []
@@ -37,3 +38,11 @@ blockchain: Iterable[Block] = []
 
 def pushBlock(block: Block):
     blockchain.append(block)
+
+
+== == == =
+transactions: [Transaction]
+
+
+blockchain: Iterable[Block] = []
+>>>>>> > bafc6b354e0c8a8d7bd0afeebb70785979f46791

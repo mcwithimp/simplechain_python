@@ -1,11 +1,9 @@
-from typing import Iterable, NamedTuple
+from typing import Iterable, NamedTuple, TypedDict
+
+Transaction = str
 
 
-class Transaction():
-    pass
-
-
-class BlockHeader(NamedTuple):
+class BlockHeader(TypedDict):
     # 현재 블록의 레벨(=높이)
     level: int
 
@@ -18,16 +16,12 @@ class BlockHeader(NamedTuple):
     # 마이닝 정보
     # 1. 마이너: 비트코인에서는 코인베이스 트랜잭션으로 표기하고 별도의 miner 정보는 없음
     miner: str
-    # 2. 논스: 블록 해시를 난이도 목표 이하로 만들기 위한 값
-    nonce: int
-    # 3. 난이도: 블록 해시는 (2 ** 256 >> difficulty) 이하여야 함
-    difficulty: int
 
     # 머클 트리의 해시 (txsHash)
     merkleRoot: str
 
 
-class Block(NamedTuple):
+class Block(TypedDict):
     # 블록 헤더
     header: BlockHeader
 
@@ -35,4 +29,4 @@ class Block(NamedTuple):
     transactions: Iterable[Transaction]
 
 
-blockchain: Iterable[Block] = []
+Blockchain: Iterable[Block] = []

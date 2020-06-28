@@ -10,5 +10,11 @@
     "sk": "41b141e91e322881426fb36d1c7249248203265233966985526b4b210ae0bc61",
     "pk": "adf1d1c5664bbf34319f3b5d116cd0a27c3cfe02aa401cf551b7c44eea1c74e6e9b037a54c43440bb8b60e40a1a08e618be0fd8a3f0db178ef6007fecb754296",
     "pkh": "1Lnwdifen3szZbG1srBwBBYA3gvVaBtXaC"
+  },
+  {
+    "alias": "ada3",
+    "sk": "fc3365ea3e3b8a112224cc1f943b5b4972a10665aaa7a4e3a835eb7e3d819828",
+    "pk": "eba4614cac4ea2a912add8d2394c910b3d872a0c3e8a438f55699026a4394cbea42a66b55e23c4ffafd7a6723dcfa244ac14dd59f7beef2a37169e38c67534fe",
+    "pkh": "1N7jStcKj2W15VeLfCvkNyqx5i52DCUEAr"
   }
 ]
