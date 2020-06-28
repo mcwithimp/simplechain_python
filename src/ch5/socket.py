@@ -25,9 +25,12 @@ peers = {}
 async def handler(websocket, path):
     global peers
     payload = await websocket.recv()
-    msg: Message = json.loads(payload)
-    msgType = msg['msgType']
-    body = msg['body']
+    msgType = payload['msgType']
+    body = json.loads(payload['body'])
+    print("??????")
+    print(body)
+    print(type(body))
+    print("!!!!!!")
 
     if msgType == 'PeerRequest':
         await websocket.send(createMessage('PeerResponse', list(peers)))
@@ -42,12 +45,14 @@ async def handler(websocket, path):
         localHeader = getHead()['header']
         remoteHeader = body
 
+        print("SyncRequest", localHeader, remoteHeader)
+
         # 상대방 블록이 내거보다 높으면 싱크 리퀘스트를 보낸다
-        if remoteHeader["level"] > remoteHeader["level"]:
+        if remoteHeader["level"] > localHeader["level"]:
             await websocket.send(createMessage('SyncRequest', localHeader))
 
         # 레벨이 같으면 아무것도 하지 않는다 (경합상황)
-        elif remoteHeader["level"] == remoteHeader["level"]:
+        elif remoteHeader["level"] == localHeader["level"]:
             await websocket.send(createMessage('SyncResponse', None))
 
         # 내 blockheight가 더 높다.

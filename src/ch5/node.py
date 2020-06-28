@@ -18,14 +18,22 @@ BOOTSTRAP_PEER = os.environ.get('BOOTSTRAP_PEER', '')
 mempool: Iterable[Transaction] = []
 
 
-async def node():
+def node():
+    eventloop = asyncio.get_event_loop()
+    # asyncio.get_event_loop().run_until_complete(start_server)
+    # asyncio.get_event_loop().run_forever()
     # 부트스트랩
-    await bootstrap()
+    bootstrapThread = bootstrap()
+
     # 채굴 쓰레드 생성
     threading.Thread(target=minerThread).start()
 
     # 소켓 서버 쓰레드
-    socketThread()
+    sock = socketThread()
+
+    eventloop.run_until_complete(bootstrapThread)
+    eventloop.run_until_complete(sock)
+    eventloop.run_forever()
 
 
 async def bootstrap():
@@ -38,22 +46,19 @@ async def bootstrap():
             json.dumps(
                 createMessage(
                     msgType='SyncRequest',
-                    data=None)))
+                    data=getHead()['header'])))
 
         print("Sync request asdfasf")
 
 
 def socketThread():
-    start_server = websockets.serve(handler, "0.0.0.0", PORT)
-    asyncio.get_event_loop().run_until_complete(start_server)
-    asyncio.get_event_loop().run_forever()
+    return websockets.serve(handler, "0.0.0.0", PORT)
 
 
 def minerThread():
     while True:
         currentHead = getHead()
         currentLevel = currentHead["header"]["level"]
-        print(currentHead)
         coinbaseTx = createCoinbaseTx(
             pk=myKey["pk"],
             sk=myKey["sk"],
@@ -91,4 +96,4 @@ def minerThread():
 
 
 if __name__ == '__main__':
-    asyncio.run(node())
+    node()
