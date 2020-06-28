@@ -42,13 +42,13 @@ async def bootstrap():
         peerWebsocket = await websockets.connect(uri=f'ws://{BOOTSTRAP_PEER}:{PORT}')
 
         print("sending sync request")
-        peerWebsocket.send(
+        await peerWebsocket.send(
             createMessage(
                 msgType='PeerRequest',
                 data=None)
         )
 
-        peerWebsocket.send(
+        await peerWebsocket.send(
             createMessage(
                 msgType='SyncRequest',
                 data=getHead()['header']))
