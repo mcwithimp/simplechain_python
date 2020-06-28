@@ -22,6 +22,9 @@ class BlockHeader(TypedDict):
 
 
 class Block(TypedDict):
+    # 블록 해시
+    hash: str
+
     # 블록 헤더
     header: BlockHeader
 
