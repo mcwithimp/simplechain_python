@@ -13,32 +13,39 @@ import os
 import threading
 
 PORT = os.environ.get('PORT', 9999)
-BOOTSTRAP_PEER = os.environ.get('BOOTSTRAP_PEER')
+BOOTSTRAP_PEER = os.environ.get('BOOTSTRAP_PEER', '')
 
 mempool: Iterable[Transaction] = []
 
 
 def node():
+    # 부트스트랩
+    bootstrap()
+
     # 채굴 쓰레드 생성
     threading.Thread(target=minerThread).start()
 
     # 소켓 서버 쓰레드
     socketThread()
 
-    #
-
 
 async def bootstrap():
-    peerWebsocket = await websockets.connect(uri=f'ws://{BOOTSTRAP_PEER}:{PORT}')
-    peerWebsocket.send(
-        json.dumps(
-            createMessage(
-                msgType='SyncRequest',
-                data=None)))
+    if any(BOOTSTRAP_PEER):
+        print("sibal")
+        peerWebsocket = await websockets.connect(uri=f'ws://{BOOTSTRAP_PEER}:{PORT}')
+
+        print("sending sync request")
+        await peerWebsocket.send(
+            json.dumps(
+                createMessage(
+                    msgType='SyncRequest',
+                    data=None)))
+
+        print("Sync request asdfasf")
 
 
 def socketThread():
-    start_server = websockets.serve(handler, "localhost", PORT)
+    start_server = websockets.serve(handler, "0.0.0.0", PORT)
     asyncio.get_event_loop().run_until_complete(start_server)
     asyncio.get_event_loop().run_forever()
 

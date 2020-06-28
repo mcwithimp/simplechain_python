@@ -114,4 +114,5 @@ class Message(TypedDict):
 
 
 def createMessage(msgType: str, data: object):
+    print(f"creating message {msgType}")
     return Message(msgType=msgType, body=json.dumps(data))

@@ -17,13 +17,17 @@ Context = Iterable[UTxOSet]
 UTxOContext: Context = []
 
 
+def getHeadUTxOContext() -> Context:
+    return UTxOContext[-1]
+
+
 def getUTxOContext() -> Context:
     return UTxOContext
 
 
 def updateUTxOContext(level: int, block):
     # 가장 최근의 UTxOContext를 가져온다.
-    utxoContext = UTxOContext if len(UTxOContext) else {}
+    utxoContext = getHeadUTxOContext() if len(UTxOContext) else {}
 
     transactions = block['transactions']
     for tx in transactions:
@@ -35,10 +39,11 @@ def updateUTxOContext(level: int, block):
                 amount=txOut['amount']
             )
 
-            utxoContext["tx.txId_{idx}".format(idx=txOutIdx)] = utxo
+            utxoContext[f'{tx["txId"]}_{txOutIdx}'] = utxo
 
-        for txIn in tx.txIns:
-            del utxoContext["{txOutId}_{txOutIdx}".format(
-                txOutId=txIn["txOutId"], txOutIdx=txIn["txOutIdx"])]
+        for txIn in tx["txIns"]:
+            key = f'{txIn["txOutId"]}_{txIn["txOutIdx"]}'
+            if utxoContext.get(key):
+                del utxoContext[key]
 
     getUTxOContext().append(utxoContext)
