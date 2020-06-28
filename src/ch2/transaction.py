@@ -30,7 +30,7 @@ class Transaction(TypedDict):
 
 def createCoinbaseTx(pk: str, sk: str, level: int):
     txIn = TxIn(
-        txOutId="00",
+        txOutId='0' * 64,
         txOutIdx=level
     )
     txIns = [txIn]

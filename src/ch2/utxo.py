@@ -9,11 +9,16 @@ class UTxO(TypedDict):
     amount: int
 
 
+"""types"""
 UTxOSet = Iterable[UTxO]
-
 Context = Iterable[UTxOSet]
 
+"""assignment"""
 UTxOContext: Context = []
+
+
+def getUTxOContext() -> Context:
+    return UTxOContext
 
 
 def updateUTxOContext(level: int, block: Block):
@@ -32,5 +37,4 @@ def updateUTxOContext(level: int, block: Block):
 
             utxoContext["tx.txId_{idx}".format(idx=txOutIdx)] = utxo
 
-    UTxOContext.append(utxoContext)
-    # UTxOContext[blockLevel] = utxoContext
+    getUTxOContext().append(utxoContext)
