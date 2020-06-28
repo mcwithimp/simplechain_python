@@ -89,26 +89,6 @@ def getTimestamp() -> int:
     return int(time.time())
 
 
-def createNewBlock(transactions) -> Block:
-    head = getHead()
-
-    header = BlockHeader(
-        level=head['header']['level'] + 1,
-        previousHash=head['hash'],
-        timestamp=getTimestamp(),
-        miner=myKey['pkh'],
-        merkleRoot=generateHash(transactions)
-    )
-
-    blockHash = generateHash(header)
-
-    return Block(
-        hash=blockHash,
-        header=header,
-        transactions=transactions
-    )
-
-
 def pushBlock(block: Block):
     getBlockchain().append(block)
 
