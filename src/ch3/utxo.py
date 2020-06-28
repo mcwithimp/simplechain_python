@@ -1,5 +1,5 @@
-from customTypes.utxo import UTxO
-from customTypes.block import Block
+from .customTypes.utxo import UTxO
+from .customTypes.block import Block
 
 UTxOContext = []
 

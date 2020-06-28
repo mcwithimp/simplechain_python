@@ -1,5 +1,5 @@
 from typing import Iterable, NamedTuple
-from transaction import Transaction
+from .transaction import Transaction
 
 
 class BlockHeader(NamedTuple):
@@ -29,20 +29,12 @@ class Block(NamedTuple):
     header: BlockHeader
 
     # 트랜잭션
-<< << << < HEAD
-transactions: Iterable[Transaction]
-
-
-blockchain: Iterable[Block] = []
+    transactions: Iterable[Transaction]
 
 
 def pushBlock(block: Block):
     blockchain.append(block)
 
 
-== == == =
 transactions: [Transaction]
-
-
 blockchain: Iterable[Block] = []
->>>>>> > bafc6b354e0c8a8d7bd0afeebb70785979f46791

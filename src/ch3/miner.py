@@ -1,12 +1,14 @@
-from customTypes.block import Block, BlockHeader
-from blockchain import blockchain
-from crypto import sha256_raw
+from .customTypes.block import Block, BlockHeader
+from .blockchain import blockchain
+from ..lib.crypto import sha256
+import json
 
 # 블록헤더 + nonce를 가지고 difficulty target 이하의 값을 찾는
 # 해시를 만든다
 
-difficultyPeriod = 10
 maxDifficulty = 0xffff * 256 ** (0x1d - 3)
+
+parameters = json.load("./parameters.json")
 
 
 def mine(header: BlockHeader):
@@ -21,9 +23,9 @@ def mine(header: BlockHeader):
 
     while True:
         header.nonce = nonce
-        blockHash = sha256_raw(header)
+        blockHash = sha256(header)
 
-        if blockHash < target then:
+        if (int(blockHash, base=16) < target):
             break
 
         nonce = nonce + 1
@@ -32,34 +34,24 @@ def mine(header: BlockHeader):
     return (blockHash, header)
 
 
-def calculateDifficulty(header: BlockHeader):
-    #     const {level, timestamp} = nextBlockHeader
-    #     const blockchain = getBlockchain()
-
-    # if ((level % DIFFICULTY_PERIOD) !== 0) return
-    # getHead().header.difficulty
-
-    #     const lastCalculatedBlock = blockchain[level - DIFFICULTY_PERIOD]
-    #     const lastCalculatedDifficulty = lastCalculatedBlock.header.difficulty
-
-    #     const previousTarget = difficultyConstant / lastCalculatedDifficulty
-    #     const timeDifference = timestamp - lastCalculatedBlock.header.timestamp
-    #     const timeExpected = BLOCK_INTERVAL * DIFFICULTY_PERIOD
-
-    #     const nextTarget = previousTarget * timeDifference / timeExpected
-    #     const nextDifficulty = difficultyConstant / nextTarget
-
-    #     return nextDifficulty
-
+def calculateDifficulty(header: BlockHeader) -> int:
     level = header.level
     timestamp = header.timestamp
-    lastCalculatedBlock = blockchain[level - difficultyPeriod]
+    lastCalculatedBlock = blockchain[level - parameters.DIFFICULTY_PERIOD]
     lastCalculatedDifficulty = lastCalculatedBlock.difficulty
 
-    previousTarget = maxDifficulty / lastCalculatedDifficulty
-    timeDifference =
+    previousTarget = (maxDifficulty / lastCalculatedDifficulty)
+    timeDifference = timestamp - lastCalculatedBlock.header.difficulty
+    timeExpected = parameters.BLOCK_INTERVAL * parameters.DIFFICULTY_PERIOD
 
-    return header.difficulty
+    nextTarget = previousTarget * timeDifference / timeExpected
+    nextDifficulty = maxDifficulty / nextTarget
+
+    return nextDifficulty
+
+
+if __name__ == '__main__':
+    print("fuck")
 
 
 # import {

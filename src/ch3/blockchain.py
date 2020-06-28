@@ -1,7 +1,7 @@
 import sys
-from customTypes.block import Block, BlockHeader, pushBlock
-from transaction import createCoinbaseTx
-from utxo import UTxOContext, updateUTxOContext
+from .customTypes.block import Block, BlockHeader, pushBlock
+from .transaction import createCoinbaseTx
+from .utxo import UTxOContext, updateUTxOContext
 
 
 def createBlock(level, previousHash, timestamp,
@@ -10,7 +10,7 @@ def createBlock(level, previousHash, timestamp,
 
 
 def initGenesis():
-    genesisTx = createCoinbaseTx(myKey=f"key", blockLevel=1)
+    genesisTx = createCoinbaseTx(sk="AAA", pk="BBB", blockLevel=1)
     block = Block(
         header=BlockHeader(
             level=1,

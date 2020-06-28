@@ -1,9 +1,9 @@
-from customTypes.transaction import TxIn, TxOut, Transaction, blockReward
-from crypto import sha256, signTx
+from .customTypes.transaction import TxIn, TxOut, Transaction, blockReward
+from ..lib.crypto import sha256, signTransaction
 import json
 
 
-def createCoinbaseTx(myKey, blockLevel):
+def createCoinbaseTx(pk: str, sk: str, blockLevel):
     txIn = TxIn(
         txOutId="0",
         txOutIdx=blockLevel
@@ -11,7 +11,7 @@ def createCoinbaseTx(myKey, blockLevel):
     txIns = [txIn]
 
     txOut = TxOut(
-        address=myKey,
+        address=pk,
         amount=blockReward
     )
     txOuts = [txOut]
@@ -21,5 +21,5 @@ def createCoinbaseTx(myKey, blockLevel):
         txIns=txIns,
         txOuts=txOuts,
         txId=txId,
-        signature=signTx(txId)
+        signature=signTransaction(sk, txId)
     )
