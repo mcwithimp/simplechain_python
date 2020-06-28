@@ -1,10 +1,22 @@
-from customTypes.utxo import UTxO
-from customTypes.block import Block
-
-UTxOContext = []
+from typing import Iterable, TypedDict
+from .blockchain import Block
 
 
-def updateUTxOContext(blockLevel, block: Block):
+class UTxO(TypedDict):
+    txOutId: str
+    txOutIdx: str
+    address: str  # publickey_hash
+    amount: int
+
+
+UTxOSet = Iterable[UTxO]
+
+Context = Iterable[UTxOSet]
+
+UTxOContext: Context = []
+
+
+def updateUTxOContext(level: int, block: Block):
     # 가장 최근의 UTxOContext를 가져온다.
     utxoContext = UTxOContext if len(UTxOContext) else {}
 
