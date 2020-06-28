@@ -29,7 +29,7 @@ async def handler(websocket, path):
     msgType = msg['msgType']
     body = json.loads(msg['body'])
 
-    print(f"Received Message {msgType}")
+    print(f"Received Message {msgType} from {websocket.remote_address[0]}")
 
     if msgType == 'PeerRequest':
         await websocket.send(createMessage('PeerResponse', list(peers)))
