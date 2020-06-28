@@ -79,7 +79,7 @@ def minerThread():
             previousHash=currentHead["hash"],
             timestamp=getTimestamp(),
             miner=myKey["pk"],
-            txsHash=generateHash(transactions),
+            merkleRoot=generateHash(transactions),
             nonce=0,
             difficulty=currentHead["header"]["difficulty"]
         )
