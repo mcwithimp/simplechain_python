@@ -21,6 +21,7 @@ myKey = getKeys('ada')
 
 def createGenesisBlock() -> Block:
     transactions = ['Alice sends 10 btc to Bob']
+
     header = BlockHeader(
         level=0,
         previousHash='0' * 64,
@@ -29,7 +30,10 @@ def createGenesisBlock() -> Block:
         merkleRoot=generateHash(transactions)
     )
 
+    blockHash = generateHash(header)
+
     return Block(
+        hash=blockHash,
         header=header,
         transactions=transactions
     )
@@ -38,22 +42,42 @@ def createGenesisBlock() -> Block:
 genesisBlock: Block = createGenesisBlock()
 blockchain: Blockchain = [genesisBlock]
 
-print(json.dumps(blockchain, indent=2))
+
+def getBlockchain() -> Blockchain:
+    return blockchain
 
 
-def createBlock(level, previousHash, timestamp,
-                miner, nonce, difficulty, merkleRoot):
-    pass
+def getHead() -> Block:
+    return blockchain[len(blockchain) - 1]
 
 
-# def header(self, nonce=None) -> str:
-#     """
-#     This is hashed in an attempt to discover a nonce under the difficulty
-#     target.
-#     """
-#     return (
-#         f'{self.version}{self.prev_block_hash}{self.merkle_hash}'
-#         f'{self.timestamp}{self.bits}{nonce or self.nonce}')
+def getTimestamp() -> int:
+    return int(time.time())
 
-# @property
-# def id(self) -> str: return sha256d(self.header())
+
+def createNewBlock(transactions) -> Block:
+    head = getHead()
+
+    header = BlockHeader(
+        level=head['header']['level'] + 1,
+        previousHash=head['hash'],
+        timestamp=getTimestamp(),
+        miner=myKey['pkh'],
+        merkleRoot=generateHash(transactions)
+    )
+
+    blockHash = generateHash(header)
+
+    return Block(
+        hash=blockHash,
+        header=header,
+        transactions=transactions
+    )
+
+
+def pushBlock(block: Block):
+    getBlockchain().append(block)
+
+
+if __name__ == "__main__":
+    print(json.dumps(blockchain, indent=2))
