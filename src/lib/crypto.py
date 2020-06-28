@@ -8,6 +8,30 @@ from base58 import b58encode_check, b58decode, b58decode_check
 KEYS_PATH = 'src/keys.json'
 
 
+def getKeysStore() -> object:
+    # init keys if there is no key pair
+    if os.path.exists(KEYS_PATH) == False:
+        with open(KEYS_PATH, 'w') as keys_file:
+            json.dump([], keys_file, indent=2)
+
+    #  open key pairs file
+    with open(KEYS_PATH, 'r') as keys_file:
+        keysStore = json.load(keys_file)
+
+    return keysStore
+
+
+def getKeys(alias: str) -> object:
+    keysStore = getKeysStore()
+
+    filtered = list(filter(lambda x: x['alias'] == alias, keysStore))
+    if(any(filtered)):
+        return list(filtered)[0]
+    else:
+        print(f"No alias '{alias}' Found!")
+        return {}
+
+
 def sha256d(data: str or bytes) -> str:
     """A double SHA-256 hash"""
     if (not isinstance(data, bytes)):
@@ -31,21 +55,15 @@ def pkToPkh(pk: str) -> str:
 
 
 def generateKeys(alias: str):
-    # init keys if there is no key pair
-    if os.path.exists(KEYS_PATH) == False:
-        with open(KEYS_PATH, 'w') as keys_file:
-            json.dump([], keys_file, indent=2)
-
-    #  open key pairs file
-    with open(KEYS_PATH, 'r') as keys_file:
-        keysStore = json.load(keys_file)
+    keysStore = getKeysStore()
 
     #  check if there exists the same alias
-    hasConflict = any(filter(lambda x: x['alias'] == alias, keysStore))
-    if(hasConflict):
+    keys = getKeys(alias)
+    if(any(keys)):
         print(f"The alias '{alias}' already exists!")
         return
 
+    print(f"Generating an alias '{alias}' ...")
     """
         sk = secret_key
         pk = public_key
@@ -69,6 +87,9 @@ def generateKeys(alias: str):
         json.dump(keysStore, keys_file, indent=2)
 
     return keyPair
+
+
+generateKeys('ada3')
 
 
 def signTransaction(sk: str, txHash: str) -> str:
@@ -173,4 +194,5 @@ def test():
     print(verified)
 
 
-# test()
+if __name__ == "__main__":
+    test()

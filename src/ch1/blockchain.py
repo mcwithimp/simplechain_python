@@ -1,5 +1,8 @@
+import json
+import os
 import sys
-from customTypes.block import Block, BlockHeader
+from .customTypes.block import Block, BlockHeader
+from ..lib.crypto import getKeys
 
 
 def createBlock(level, previousHash, timestamp,
