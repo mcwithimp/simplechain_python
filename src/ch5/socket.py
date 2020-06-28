@@ -25,10 +25,11 @@ peers = {}
 async def handler(websocket, path):
     global peers
     payload = await websocket.recv()
-    print("what the fuck?", payload)
     msg = json.loads(payload)
+    print("what the fuck?", msg)
+
     msgType = msg['msgType']
-    body = json.loads(msg['body'])
+    body = msg['body']
 
     print(f"Received Message {msgType} from {websocket.remote_address[0]}")
 
