@@ -46,8 +46,7 @@ async def bootstrap():
             json.dumps(
                 createMessage(
                     msgType='PeerRequest',
-                    data=0
-                )
+                    data="0")
             )
         )
         await handler(peerWebsocket, peerWebsocket.path)

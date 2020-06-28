@@ -25,6 +25,7 @@ peers = {}
 async def handler(websocket, path):
     global peers
     payload = await websocket.recv()
+    print("what the fuck?", payload)
     msg = json.loads(payload)
     msgType = msg['msgType']
     body = json.loads(msg['body'])
