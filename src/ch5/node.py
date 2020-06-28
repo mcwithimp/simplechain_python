@@ -29,7 +29,6 @@ def node():
 
 
 async def bootstrap():
-
     peerWebsocket = await websockets.connect(uri=f'ws://{BOOTSTRAP_PEER}:{PORT}')
     peerWebsocket.send(
         json.dumps(

@@ -36,7 +36,7 @@ async def handler(websocket, path):
     elif msgType == 'PeerResponse':
         peers = body
         for peer in peers:
-            peers[peer] = websockets.connect(peer)
+            peers[peer] = await websockets.connect(peer)
 
     elif msgType == 'SyncRequest':
         localHeader = getHead()['header']
