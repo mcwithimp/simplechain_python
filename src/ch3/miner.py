@@ -1,5 +1,4 @@
-from .blockchain import blockchain
-from ..lib.crypto import sha256
+from ..lib.crypto import sha256, generateHash
 import json
 
 # 블록헤더 + nonce를 가지고 difficulty target 이하의 값을 찾는
@@ -11,32 +10,43 @@ with open(PARAMS_PATH, 'r') as params_file:
     params = json.load(params_file)
 
 
-def mine(header):
+def mine(header, blockchain):
     #
-    header.difficulty = calculateDifficulty(header)
+    header["difficulty"] = calculateDifficulty(header, blockchain)
 
     # initial value
     nonce = 0
     blockHash = ""
 
-    target = maxDifficulty / header.difficulty
+    target = maxDifficulty / header["difficulty"]
 
     while True:
-        header.nonce = nonce
-        blockHash = sha256(header)
+        header["nonce"] = nonce
+        blockHash = generateHash(header)
 
+        # print(blockHash, target)
+
+        # print(int(blockHash, base=16), target, nonce)
+        # print(int(blockHash, base=16) < target)
         if (int(blockHash, base=16) < target):
             break
 
         nonce = nonce + 1
 
     # found header
-    return (blockHash, header)
+    return {
+        "blockHash": blockHash,
+        "header": header
+    }
 
 
-def calculateDifficulty(header) -> int:
+def calculateDifficulty(header, blockchain) -> int:
     level = header["level"]
     timestamp = header["timestamp"]
+
+    if ((level % params["DIFFICULTY_PERIOD"]) != 0):
+        return header["difficulty"]
+
     lastCalculatedBlock = blockchain[level - params["DIFFICULTY_PERIOD"]]
     lastCalculatedDifficulty = lastCalculatedBlock["difficulty"]
 
@@ -51,7 +61,14 @@ def calculateDifficulty(header) -> int:
 
 
 if __name__ == '__main__':
-    print("fuck")
+    header = {
+        "level": 12,
+        "timestamp": 1593353574,
+        "difficulty": 0.00000035,
+        "nonce": 0
+    }
+
+    print(mine(header, []))
 
 
 # import {

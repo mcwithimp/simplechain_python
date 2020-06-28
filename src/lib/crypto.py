@@ -54,6 +54,10 @@ def pkToPkh(pk: str) -> str:
     return b58encode_check(b'\x00' + ripe)
 
 
+def generateHash(data: object) -> str:
+    return sha256(json.dumps(data))
+
+
 def generateKeys(alias: str):
     keysStore = getKeysStore()
 

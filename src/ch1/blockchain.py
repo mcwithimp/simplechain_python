@@ -3,7 +3,7 @@ import os
 import sys
 import time
 from typing import Iterable, NamedTuple, TypedDict
-from ..lib.crypto import getKeys, sha256
+from ..lib.crypto import getKeys, generateHash
 
 Transaction = str
 
@@ -38,10 +38,6 @@ class Block(TypedDict):
 
 
 Blockchain = Iterable[Block]
-
-
-def generateHash(data: object) -> str:
-    return sha256(json.dumps(data))
 
 
 myKey = getKeys('ada')

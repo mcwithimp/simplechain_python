@@ -3,9 +3,10 @@ import os
 import sys
 import time
 from typing import Iterable, TypedDict
-from ..lib.crypto import getKeys, sha256
+from ..lib.crypto import getKeys, generateHash
 from .transaction import Transaction, createCoinbaseTx
 from .utxo import updateUTxOContext
+from .miner import mine
 
 
 class BlockHeader(TypedDict):
@@ -38,11 +39,6 @@ class Block(TypedDict):
 
 
 Blockchain = Iterable[Block]
-
-
-def generateHash(data: object) -> str:
-    return sha256(json.dumps(data))
-
 
 myKey = getKeys('ada')
 """
@@ -104,11 +100,12 @@ def createNewBlock(transactions) -> Block:
         merkleRoot=generateHash(transactions)
     )
 
-    blockHash = generateHash(header)
+    # 채굴
+    mined = mine(header, getBlockchain())
 
     return Block(
-        hash=blockHash,
-        header=header,
+        hash=mined["blockHash"],
+        header=mined["header"],
         transactions=transactions
     )
 
