@@ -4,7 +4,7 @@ import json
 # 블록헤더 + nonce를 가지고 difficulty target 이하의 값을 찾는
 # 해시를 만든다
 
-maxDifficulty = 0xffff * 256 ** (0x1d - 3)
+difficultyConstant = 0xffff * 256 ** (0x1d - 3)
 PARAMS_PATH = "src/parameters.json"
 with open(PARAMS_PATH, 'r') as params_file:
     params = json.load(params_file)
@@ -18,7 +18,7 @@ def mine(header, blockchain):
     nonce = 0
     blockHash = ""
 
-    target = maxDifficulty / header["difficulty"]
+    target = difficultyConstant / header["difficulty"]
 
     while True:
         header["nonce"] = nonce
@@ -50,12 +50,12 @@ def calculateDifficulty(header, blockchain) -> int:
     lastCalculatedBlock = blockchain[level - params["DIFFICULTY_PERIOD"]]
     lastCalculatedDifficulty = lastCalculatedBlock["difficulty"]
 
-    previousTarget = (maxDifficulty / lastCalculatedDifficulty)
+    previousTarget = (difficultyConstant / lastCalculatedDifficulty)
     timeDifference = timestamp - lastCalculatedBlock["header"]["difficulty"]
     timeExpected = params["BLOCK_INTERVAL"] * params["DIFFICULTY_PERIOD"]
 
     nextTarget = previousTarget * timeDifference / timeExpected
-    nextDifficulty = maxDifficulty / nextTarget
+    nextDifficulty = difficultyConstant / nextTarget
 
     return nextDifficulty
 

@@ -37,4 +37,8 @@ def updateUTxOContext(level: int, block):
 
             utxoContext["tx.txId_{idx}".format(idx=txOutIdx)] = utxo
 
+        for txIn in tx.txIns:
+            del utxoContext["{txOutId}_{txOutIdx}".format(
+                txOutId=txIn["txOutId"], txOutIdx=txIn["txOutIdx"])]
+
     getUTxOContext().append(utxoContext)

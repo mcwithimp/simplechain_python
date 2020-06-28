@@ -57,7 +57,7 @@ def calculateDifficulty(header, blockchain) -> int:
     lastCalculatedDifficulty = lastCalculatedBlock["header"]["difficulty"]
 
     previousTarget = (maxDifficulty / lastCalculatedDifficulty)
-    timeDifference = timestamp - lastCalculatedBlock["header"]["difficulty"]
+    timeDifference = timestamp - lastCalculatedBlock["header"]["timestamp"]
     timeExpected = params["BLOCK_INTERVAL"] * params["DIFFICULTY_PERIOD"]
 
     nextTarget = previousTarget * timeDifference / timeExpected

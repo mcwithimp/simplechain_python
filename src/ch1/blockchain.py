@@ -49,13 +49,17 @@ myKey = getKeys('ada')
 """
 
 
+def getTimestamp() -> int:
+    return int(time.time())
+
+
 def createGenesisBlock() -> Block:
     transactions = ['Alice sends 10 btc to Bob']
 
     header = BlockHeader(
         level=0,
         previousHash='0' * 64,
-        timestamp=1_593_332_227,
+        timestamp=getTimestamp(),
         miner='1G8RdTC6nSmuLVkBzkWEaWzqqsqM8f98cU',
         merkleRoot=generateHash(transactions)
     )
@@ -79,10 +83,6 @@ def getBlockchain() -> Blockchain:
 
 def getHead() -> Block:
     return blockchain[len(blockchain) - 1]
-
-
-def getTimestamp() -> int:
-    return int(time.time())
 
 
 def createNewBlock(transactions) -> Block:
