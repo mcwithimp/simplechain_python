@@ -89,9 +89,6 @@ def generateKeys(alias: str):
     return keyPair
 
 
-generateKeys('ada3')
-
-
 def signTransaction(sk: str, txHash: str) -> str:
     sk = bytes.fromhex(sk)
     sk = SigningKey.from_string(sk, curve=SECP256k1)

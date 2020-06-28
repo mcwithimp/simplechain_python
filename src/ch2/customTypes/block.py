@@ -1,9 +1,9 @@
-from typing import Iterable, NamedTuple, TypedDict
+from typing import Iterable, NamedTuple
 
 Transaction = str
 
 
-class BlockHeader(TypedDict):
+class BlockHeader(NamedTuple):
     # 현재 블록의 레벨(=높이)
     level: int
 
@@ -21,12 +21,12 @@ class BlockHeader(TypedDict):
     merkleRoot: str
 
 
-class Block(TypedDict):
+class Block(NamedTuple):
     # 블록 헤더
     header: BlockHeader
 
     # 트랜잭션
-    transactions: Iterable[Transaction]
+    transactions: [Transaction]
 
 
-Blockchain: Iterable[Block] = []
+blockchain: Iterable[Block] = []
