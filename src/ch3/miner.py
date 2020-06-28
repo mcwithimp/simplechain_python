@@ -1,4 +1,3 @@
-from .customTypes.block import Block, BlockHeader
 from .blockchain import blockchain
 from ..lib.crypto import sha256
 import json
@@ -7,17 +6,18 @@ import json
 # 해시를 만든다
 
 maxDifficulty = 0xffff * 256 ** (0x1d - 3)
+PARAMS_PATH = "src/parameters.json"
+with open(PARAMS_PATH, 'r') as params_file:
+    params = json.load(params_file)
 
-parameters = json.load("./parameters.json")
 
-
-def mine(header: BlockHeader):
+def mine(header):
     #
     header.difficulty = calculateDifficulty(header)
 
     # initial value
     nonce = 0
-    blockHash = f""
+    blockHash = ""
 
     target = maxDifficulty / header.difficulty
 
@@ -34,15 +34,15 @@ def mine(header: BlockHeader):
     return (blockHash, header)
 
 
-def calculateDifficulty(header: BlockHeader) -> int:
+def calculateDifficulty(header) -> int:
     level = header.level
     timestamp = header.timestamp
-    lastCalculatedBlock = blockchain[level - parameters.DIFFICULTY_PERIOD]
+    lastCalculatedBlock = blockchain[level - params.DIFFICULTY_PERIOD]
     lastCalculatedDifficulty = lastCalculatedBlock.difficulty
 
     previousTarget = (maxDifficulty / lastCalculatedDifficulty)
     timeDifference = timestamp - lastCalculatedBlock.header.difficulty
-    timeExpected = parameters.BLOCK_INTERVAL * parameters.DIFFICULTY_PERIOD
+    timeExpected = params.BLOCK_INTERVAL * params.DIFFICULTY_PERIOD
 
     nextTarget = previousTarget * timeDifference / timeExpected
     nextDifficulty = maxDifficulty / nextTarget
