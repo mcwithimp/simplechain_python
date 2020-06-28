@@ -50,7 +50,7 @@ async def bootstrap():
                 )
             )
         )
-        await handler(peerWebsocket)
+        await handler(peerWebsocket, peerWebsocket.path)
 
         await peerWebsocket.send(
             json.dumps(
@@ -58,7 +58,7 @@ async def bootstrap():
                     msgType='SyncRequest',
                     data=getHead()['header'])))
 
-        await handler(peerWebsocket)
+        await handler(peerWebsocket, peerWebsocket.path)
 
 
 def socketThread():

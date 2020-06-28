@@ -22,7 +22,7 @@ possible message
 peers = {}
 
 
-async def handler(websocket):
+async def handler(websocket, path):
     global peers
     payload = await websocket.recv()
     msg = json.loads(payload)
