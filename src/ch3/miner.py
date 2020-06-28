@@ -35,14 +35,14 @@ def mine(header):
 
 
 def calculateDifficulty(header) -> int:
-    level = header.level
-    timestamp = header.timestamp
-    lastCalculatedBlock = blockchain[level - params.DIFFICULTY_PERIOD]
-    lastCalculatedDifficulty = lastCalculatedBlock.difficulty
+    level = header["level"]
+    timestamp = header["timestamp"]
+    lastCalculatedBlock = blockchain[level - params["DIFFICULTY_PERIOD"]]
+    lastCalculatedDifficulty = lastCalculatedBlock["difficulty"]
 
     previousTarget = (maxDifficulty / lastCalculatedDifficulty)
-    timeDifference = timestamp - lastCalculatedBlock.header.difficulty
-    timeExpected = params.BLOCK_INTERVAL * params.DIFFICULTY_PERIOD
+    timeDifference = timestamp - lastCalculatedBlock["header"]["difficulty"]
+    timeExpected = params["BLOCK_INTERVAL"] * params["DIFFICULTY_PERIOD"]
 
     nextTarget = previousTarget * timeDifference / timeExpected
     nextDifficulty = maxDifficulty / nextTarget
