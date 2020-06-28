@@ -26,7 +26,7 @@ def node():
     bootstrapThread = bootstrap()
 
     # 채굴 쓰레드 생성
-    threading.Thread(target=minerThread).start()
+    threading.Thread(target=minerThread, daemon=True).start()
 
     # 소켓 서버 쓰레드
     sock = socketThread()
@@ -43,19 +43,16 @@ async def bootstrap():
 
         print("sending sync request")
         await peerWebsocket.send(
-            json.dumps(
-                createMessage(
-                    msgType='PeerRequest',
-                    data=None)
-            )
+            createMessage(
+                msgType='PeerRequest',
+                data=None)
         )
         await handler(peerWebsocket, peerWebsocket.path)
 
         await peerWebsocket.send(
-            json.dumps(
-                createMessage(
-                    msgType='SyncRequest',
-                    data=getHead()['header'])))
+            createMessage(
+                msgType='SyncRequest',
+                data=getHead()['header']))
 
         await handler(peerWebsocket, peerWebsocket.path)
 
