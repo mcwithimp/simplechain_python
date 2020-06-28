@@ -46,7 +46,7 @@ async def bootstrap():
             json.dumps(
                 createMessage(
                     msgType='PeerRequest',
-                    data=None
+                    data=0
                 )
             )
         )
