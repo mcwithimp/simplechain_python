@@ -6,19 +6,13 @@ from .miner import mine
 import threading
 
 mempool: Iterable[Transaction] = []
+
 # 마이닝 쓰레드 이벤트 핸들러
 minerInterrupt = threading.Event()
 
-# def connectBlock(block):
-#     if (not doing_reorg and reorg_if_necessary()) or \
-#             chain_idx == ACTIVE_CHAIN_IDX:
-#         mine_interrupt.set()
-#         logger.info(
-#             f'block accepted '
-#             f'height={len(active_chain) - 1} txns={len(block.txns)}')
-
 
 def node():
+    # 채굴 쓰레드 생성
     threading.Thread(target=minerThread).start()
 
 
@@ -47,6 +41,9 @@ def minerThread():
         # 채굴 시작
         print("Mining", currentHead["header"]["level"])
         mineResult = mine(header, getBlockchain(), minerInterrupt)
+
+        # 다른 노드가 채굴을 먼저 완료헀을 때에는 mine() 함수가 None을 리턴함
+        # 이럴 경우 pushBlock을 하지 않는다
         if mineResult is None:
             pass
 
