@@ -18,10 +18,9 @@ BOOTSTRAP_PEER = os.environ.get('BOOTSTRAP_PEER', '')
 mempool: Iterable[Transaction] = []
 
 
-def node():
+async def node():
     # 부트스트랩
-    bootstrap()
-
+    await bootstrap()
     # 채굴 쓰레드 생성
     threading.Thread(target=minerThread).start()
 
@@ -92,4 +91,4 @@ def minerThread():
 
 
 if __name__ == '__main__':
-    node()
+    asyncio.run(node())

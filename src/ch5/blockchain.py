@@ -66,7 +66,7 @@ def createGenesisBlock() -> Block:
     header = BlockHeader(
         level=0,
         previousHash='0' * 64,
-        timestamp=getTimestamp(),
+        timestamp=1593370920,
         miner='1G8RdTC6nSmuLVkBzkWEaWzqqsqM8f98cU',
         merkleRoot=generateHash(genesisTx),
         nonce=0,
