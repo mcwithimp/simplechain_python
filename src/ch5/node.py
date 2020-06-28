@@ -42,19 +42,21 @@ async def bootstrap():
         peerWebsocket = await websockets.connect(uri=f'ws://{BOOTSTRAP_PEER}:{PORT}')
 
         print("sending sync request")
-        await peerWebsocket.send(
+        peerWebsocket.send(
             createMessage(
                 msgType='PeerRequest',
                 data=None)
         )
-        await handler(peerWebsocket, peerWebsocket.path)
 
-        await peerWebsocket.send(
+        peerWebsocket.send(
             createMessage(
                 msgType='SyncRequest',
                 data=getHead()['header']))
 
-        await handler(peerWebsocket, peerWebsocket.path)
+        try:
+            await handler(peerWebsocket, peerWebsocket.path)
+        except BaseException:
+            print("peer disconnected")
 
 
 def socketThread():
