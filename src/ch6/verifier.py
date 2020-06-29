@@ -1,5 +1,6 @@
-from .blockchain import getHead, getBlockchain
-from ..lib.crypto import generateHash
+from .blockchain import getBlockchain, getMempool
+from .utxo import getHeadUTxOContext
+from ..lib.crypto import generateHash, verifyTxSignature
 from .miner import difficultyConstant
 import json
 
@@ -72,3 +73,63 @@ def verifyChain(candidateChain) -> bool:
             return False
 
         return True
+
+
+def verifyTxIns(txIns, headContext, txId, signature) -> bool:
+    for txIn in txIns:
+        target = f"{txIn['txOutId']}_{txIn['txOutIdx']}"
+        isUnspent = headContext.hasOwnProperty(target)
+
+        if (isUnspent == False):
+            print("Claimed utxo doesn't exist!")
+            return False
+
+        pkh = headContext[target]['address']
+        if (verifyTxSignature(txId, signature, pkh) == False):
+            print("Tx's signature is not valid!")
+            return False
+
+    return True
+
+
+def isTxInDoubledClaimed(candidateTx) -> bool:
+    mempool = getMempool()
+
+    for txInMempool in mempool:
+        for txIn in txInMempool['txIns']:
+            for candiTxIn in candidateTx['txIns']:
+                if(candiTxIn['txOutId'] == txIn['txOutId'] and
+                   candiTxIn['txOutIdx'] == txIn['txOutIdx']):
+                    return True
+
+    return False
+
+
+def verifyTx(tx) -> bool:
+    headContext = getHeadUTxOContext()
+
+    if (isTxInDoubledClaimed(tx) == True):
+        print("One of TxIns is doubly claimed!")
+        return False
+
+    if (generateHash({tx['txIns'], tx['txOuts']}) != tx['txId']):
+        print("TxId is not valid!")
+        return False
+    elif (verifyTxIns(tx['txIns'], headContext, tx['txId'], tx['signature']) == False):
+        print("Claim of txIns is not valid!")
+        return False
+
+    txInsAmount = 0
+    for txIn in tx['txIns']:
+        amount = headContext[f"{txIn['txOutId']}_{txIn['txOueIdx']}"]['amount']
+        txInsAmount += amount
+
+    txOutsAmount = 0
+    for txOut in tx['txOuts']:
+        txOutsAmount += txOut['amount']
+
+    if (txInsAmount != txOutsAmount):
+        print("TxIns' amount is different with TxOuts' amount!")
+        return False
+
+    return True

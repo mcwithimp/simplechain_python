@@ -1,6 +1,6 @@
 import hashlib
 from ecdsa import SECP256k1, SigningKey, VerifyingKey
-from ecdsa.util import sigencode_der, sigdecode_der
+import ecdsa
 import os
 import json
 from base58 import b58encode_check, b58decode, b58decode_check
@@ -100,12 +100,17 @@ def signTransaction(sk: str, txHash: str) -> str:
     return signature.hex()
 
 
-def verifyTxSignature(txHash: str, signature: str, pk: str) -> bool:
+def verifyTxSignature(txHash: str, signature: str, pkh: str) -> bool:
     try:
-        pk = bytes.fromhex(pk)
-        pk = VerifyingKey.from_string(pk, curve=SECP256k1)
-        pk.verify(bytes.fromhex(signature), bytes.fromhex(txHash))
-        return True
+        pks = VerifyingKey.from_public_key_recovery(
+            bytes.fromhex(signature), bytes.fromhex(txHash), SECP256k1)
+
+        for pk in pks:
+            recoveredPk = pkToPkh(pk.to_string().hex())
+            if(recoveredPk.decode() == pkh):
+                return pk.verify(bytes.fromhex(signature),
+                                 bytes.fromhex(txHash))
+        return False
     except BaseException:
         return False
 
@@ -125,16 +130,34 @@ def verifyPkh(pkh: str) -> bool:
 def test():
     keys = [
         {
-            "alias": "ada",
+            "alias": "mc",
             "sk": "fc487a5adcb6fe82ac8de12f2c6cffa2b395bae0b694591c1a9ef973552e4030",
             "pk": "c621e37b2be6e83ce77b539a90f6fc99a218986499a5b7565283eb9ec369f5c08f527af268fa9a274613804f8773b042e1866a84c705ddc18bb6f05598d7456a",
             "pkh": "1G8RdTC6nSmuLVkBzkWEaWzqqsqM8f98cU"
         },
         {
-            "alias": "ada2",
+            "alias": "multicampus1",
             "sk": "41b141e91e322881426fb36d1c7249248203265233966985526b4b210ae0bc61",
             "pk": "adf1d1c5664bbf34319f3b5d116cd0a27c3cfe02aa401cf551b7c44eea1c74e6e9b037a54c43440bb8b60e40a1a08e618be0fd8a3f0db178ef6007fecb754296",
             "pkh": "1Lnwdifen3szZbG1srBwBBYA3gvVaBtXaC"
+        },
+        {
+            "alias": "multicampus2",
+            "sk": "fc3365ea3e3b8a112224cc1f943b5b4972a10665aaa7a4e3a835eb7e3d819828",
+            "pk": "eba4614cac4ea2a912add8d2394c910b3d872a0c3e8a438f55699026a4394cbea42a66b55e23c4ffafd7a6723dcfa244ac14dd59f7beef2a37169e38c67534fe",
+            "pkh": "1N7jStcKj2W15VeLfCvkNyqx5i52DCUEAr"
+        },
+        {
+            "alias": "multicampus3",
+            "sk": "3fde32b63fe929ae4d525c269be9753c37b6ea9f7a7980ca40523d39f4291314",
+            "pk": "2c2a249c14fa977b2039f38d32b11ca3851f64e8fd4820703b4245b876bbeca9ae2f070803f4d75f8479bf3693f23687513e6cfda18bbf820e625c5967cff85f",
+            "pkh": "1DtCjXZcdJjpcVV7NtfsXJEGToW8sf1iej"
+        },
+        {
+            "alias": "multicampus4",
+            "sk": "80342eb4435cf43f792a595c6e6e426a75269c791239031b1f1f1d38dcc0bdc3",
+            "pk": "c04adcd0c6e7744c7f3e20075e84bb8b3f9712a8a861be7eb7b2c30cabfbe4b06968a307e93378e3ab0ebe4e943181986da00ef6fe4cb470553b225579fa14e8",
+            "pkh": "12ZMgAe4tS174DbvTN5nqBUCQZn4rCk92B"
         }
     ]
 
@@ -176,23 +199,23 @@ def test():
         'pk': ''
     }
 
-    signature = signTransaction(
-        keys[0]['sk'],
-        testTx['txId'])
+    for idx, key in enumerate(keys):
+        signature = signTransaction(
+            key['sk'],
+            testTx['txId'])
 
-    verified = verifyTxSignature(
-        testTx['txId'],
-        signature,
-        keys[0]['pk'])
+        verified = verifyTxSignature(
+            testTx['txId'],
+            signature,
+            key['pkh'])
 
-    print(verified)
+        nonVerified = verifyTxSignature(
+            testTx['txId'],
+            signature,
+            keys[(idx + 2) % len(keys)]['pkh'])
 
-    verified = verifyTxSignature(
-        testTx['txId'],
-        signature,
-        keys[1]['pk'])
-
-    print(verified)
+        print('verified: ', verified)
+        print('non-verified: ', nonVerified)
 
 
 if __name__ == "__main__":
