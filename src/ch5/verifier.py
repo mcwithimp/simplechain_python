@@ -1,4 +1,5 @@
 from .blockchain import getHead, getBlockchain
+from .mempool import getMempool
 from ..lib.crypto import generateHash
 from .miner import difficultyConstant
 import json
@@ -35,7 +36,7 @@ def verifyBlock(block) -> bool:
     difficulty = header['difficulty']
     target = difficultyConstant / difficulty
 
-    if (int(block['hash']) >= target):
+    if (int(block['hash'], 16) >= target):
         print("PoW is not valid!")
         return False
 

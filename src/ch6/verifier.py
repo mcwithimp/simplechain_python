@@ -1,4 +1,5 @@
-from .blockchain import getBlockchain, getMempool
+from .blockchain import getBlockchain
+from .mempool import getMempool
 from .utxo import getHeadUTxOContext
 from ..lib.crypto import generateHash, verifyTxSignature
 from .miner import difficultyConstant
@@ -36,7 +37,7 @@ def verifyBlock(block) -> bool:
     difficulty = header['difficulty']
     target = difficultyConstant / difficulty
 
-    if (int(block['hash']) >= target):
+    if (int(block['hash'], 16) >= target):
         print("PoW is not valid!")
         return False
 

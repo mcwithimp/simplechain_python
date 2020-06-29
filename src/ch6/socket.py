@@ -7,6 +7,7 @@ from .utxo import updateUTxOContext
 from typing import TypedDict, Iterable, Dict
 import os
 import asyncio
+import sys
 
 
 """
@@ -72,7 +73,7 @@ async def handler(websocket, path):
                 await websocket.send(createMessage('PeerResponse', list(peers)))
                 port = body
                 peers[f'{websocket.remote_address[0]}:{port}'] = websocket
-                print(f"Set peer {websocket.remote_address[0]}: {port}")
+                print(f"Set peer {websocket.remote_address[0]}:{port}")
 
             elif msgType == 'PeerResponse':
                 newPeers = body
@@ -160,7 +161,8 @@ async def handler(websocket, path):
 
     # 소켓이 닫힌 경우, peer 목록에서 해당 클라이언트를 삭제한다
     except BaseException:
-        del peers[websocket.remote_address[0], websocket.remote_address[1]]
+        print('exception',sys.exc_info())
+        del peers[f"{websocket.remote_address[0]}:{websocket.remote_address[1]}"]
 
 
 class Message(TypedDict):

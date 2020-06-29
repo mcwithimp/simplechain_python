@@ -3,6 +3,7 @@ from .blockchain import Block, pushBlock, getHead, getBlockchain, BlockHeader, g
 from .transaction import createCoinbaseTx, Transaction
 from ..lib.crypto import generateHash
 from .miner import mine, minerInterrupt
+from .mempool import getMempool
 from .rpc import app
 
 
@@ -16,8 +17,6 @@ import threading
 
 PORT = os.environ.get('PORT', 9999)
 BOOTSTRAP_PEER = os.environ.get('BOOTSTRAP_PEER', '')
-
-mempool: Iterable[Transaction] = []
 
 
 async def node():
@@ -66,7 +65,7 @@ def minerThread(queue,loop):
                 pk=myKey["pk"],
                 sk=myKey["sk"],
                 level=currentLevel + 1)
-            transactions = [coinbaseTx, *mempool]
+            transactions = [coinbaseTx, *getMempool()]
 
             # 이번에 생성하는 블록 헤더를 만든다
             header = BlockHeader(
