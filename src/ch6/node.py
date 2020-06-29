@@ -9,7 +9,7 @@ from .rpc import app
 # 웹소켓용
 import asyncio
 import websockets
-from .socket import handler, createMessage
+from .socket import bootstrap, handler, createMessage
 import json
 import os
 import threading
@@ -22,50 +22,33 @@ mempool: Iterable[Transaction] = []
 
 def node():
     eventloop = asyncio.get_event_loop()
-    # asyncio.get_event_loop().run_until_complete(start_server)
-    # asyncio.get_event_loop().run_forever()
+
     # 부트스트랩
-    bootstrapThread = bootstrap()
+    bootstrapThread()
 
     # 채굴 쓰레드 생성
     threading.Thread(target=minerThread, daemon=True).start()
 
     # 소켓 서버 쓰레드
-    sock = socketThread()
+    socketThread()
 
     # rpc
     app.run(host='0.0.0.0', port=1337)
 
-    eventloop.run_until_complete(bootstrapThread)
-    eventloop.run_until_complete(sock)
+    # eventloop.run_until_complete(boot)
+    # eventloop.run_until_complete(sock)
     eventloop.run_forever()
 
 
-async def bootstrap():
+def bootstrapThread():
     if any(BOOTSTRAP_PEER):
-        print("sibal")
-        peerWebsocket = await websockets.connect(uri=f'ws://{BOOTSTRAP_PEER}:{PORT}')
-
-        print("sending sync request")
-        await peerWebsocket.send(
-            createMessage(
-                msgType='PeerRequest',
-                data=None)
-        )
-
-        await peerWebsocket.send(
-            createMessage(
-                msgType='SyncRequest',
-                data=getHead()['header']))
-
-        try:
-            await handler(peerWebsocket, peerWebsocket.path)
-        except BaseException:
-            print("peer disconnected")
+        split = BOOTSTRAP_PEER.split(':')
+        bootstrap(address=split[0], address=split[1])
 
 
 def socketThread():
-    return websockets.serve(handler, "0.0.0.0", PORT)
+    eventloop = asyncio.get_event_loop()
+    eventloop.run_until_complete(websockets.serve(handler, "0.0.0.0", PORT))
 
 
 def minerThread():

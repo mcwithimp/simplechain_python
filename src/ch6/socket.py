@@ -5,6 +5,8 @@ from .verifier import verifyChain
 from .miner import minerInterrupt
 from .utxo import updateUTxOContext
 from typing import TypedDict, Iterable, Dict
+import os
+import asyncio
 
 
 """
@@ -21,6 +23,35 @@ possible message
 
 peers = {}
 
+PORT = os.environ.get('PORT', 9999)
+
+
+def bootstrap(address: str, port: str):
+    eventloop = asyncio.get_event_loop()
+
+    async def init():
+        peerWebsocket = await websockets.connect(uri=f'ws://{address}:{port}')
+        peers[address] = peerWebsocket
+
+        print("sending sync request")
+        await peerWebsocket.send(
+            createMessage(
+                msgType='PeerRequest',
+                data=None)
+        )
+
+        await peerWebsocket.send(
+            createMessage(
+                msgType='SyncRequest',
+                data=getHead()['header']))
+
+        try:
+            await handler(peerWebsocket, peerWebsocket.path)
+        except BaseException:
+            del peers[address]
+
+    eventloop.run_until_complete(init())
+
 
 async def handler(websocket, path):
     global peers
@@ -35,12 +66,13 @@ async def handler(websocket, path):
 
         if msgType == 'PeerRequest':
             await websocket.send(createMessage('PeerResponse', list(peers)))
-            peers[websocket.remote_address[0]] = websocket
+            peers[f'{websocket.remote_address[0]}:{websocket.remote_address[1]}'] = websocket
 
         elif msgType == 'PeerResponse':
             peers = body
-            # for peer in peers:
-            # peers[peer] = await websockets.connect(f'ws://{peer}:{PORT}')
+            for peer in peers:
+                split = peer.slit(':')
+                bootstrap(address=split[0], port=split[1])
 
         elif msgType == 'SyncRequest':
             localHeader = getHead()['header']
@@ -123,3 +155,23 @@ def createMessage(msgType: str, data: object):
     msg = json.dumps(Message(msgType=msgType, body=data))
     print(f"creating message {msgType}", msg)
     return msg
+
+
+# def broadcastNextBlock = (block: Block) = > {
+#     const blockInjectedMessage = createBlockInjectedMsg(block)
+#     peers.forEach(peer= > {
+#         peer.send(blockInjectedMessage)
+#     })
+
+#     // const nextBlock = createNewBlock([])
+#     // pushBlock(nextBlock)
+
+# }
+
+
+# def broadcastTransaction = (tx: Transaction) = > {
+#     const txInjectedMessage = createTxInjectedMsg(tx)
+#     peers.forEach(peer= > {
+#         peer.send(txInjectedMessage)
+#     })
+# }
