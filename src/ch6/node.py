@@ -33,7 +33,7 @@ def node():
     socketThread()
 
     # rpc
-    app.run(host='0.0.0.0', port=1337)
+    # app.run(host='0.0.0.0', port=1337)
 
     # eventloop.run_until_complete(boot)
     # eventloop.run_until_complete(sock)
@@ -43,7 +43,7 @@ def node():
 def bootstrapThread():
     if any(BOOTSTRAP_PEER):
         split = BOOTSTRAP_PEER.split(':')
-        bootstrap(address=split[0], address=split[1])
+        bootstrap(address=split[0], port=split[1])
 
 
 def socketThread():

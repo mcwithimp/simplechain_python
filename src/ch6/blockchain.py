@@ -6,6 +6,7 @@ from typing import Iterable, TypedDict
 from ..lib.crypto import getKeys, generateHash
 from .transaction import Transaction, createCoinbaseTx
 from .utxo import updateUTxOContext
+from .broadcast import broadcastBlock
 
 PARAMS_PATH = "src/parameters.json"
 with open(PARAMS_PATH, 'r') as params_file:
@@ -66,7 +67,7 @@ def createGenesisBlock() -> Block:
     header = BlockHeader(
         level=0,
         previousHash='0' * 64,
-        timestamp=1593380828,
+        timestamp=1593441559,
         miner='1G8RdTC6nSmuLVkBzkWEaWzqqsqM8f98cU',
         merkleRoot=generateHash(genesisTx),
         nonce=0,
@@ -100,6 +101,7 @@ def getHead() -> Block:
 
 def pushBlock(block: Block):
     getBlockchain().append(block)
+    broadcastBlock(block)
 
 
 def replaceChain(nextBlockchain: Blockchain):

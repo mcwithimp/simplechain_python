@@ -1,5 +1,6 @@
 {
   "python.formatting.provider": "autopep8",
   "python.formatting.autopep8Args": ["--max-line-length=80", "--aggressive"],
-"editor.formatOnSave": true
+"editor.formatOnSave": true,
+"python.pythonPath": "venv/bin/python"
 }
