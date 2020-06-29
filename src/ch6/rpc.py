@@ -12,6 +12,15 @@ def timestamp():
     return datetime.utcfromtimestamp(time).strftime('%Y-%m-%d %H:%M:%S')
 
 
+@app.route('/head', methods=['GET'])
+def head():
+    return getHead()
+
+
+@app.route('/head/header', methods=['GET'])
+def headHeader():
+    return getHead()['header']
+
 # parser = ArgumentParser()
 # parser.add_argument(
 #     '-p',

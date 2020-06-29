@@ -47,9 +47,9 @@ class Block(TypedDict):
 
 Blockchain = Iterable[Block]
 
-myKey = getKeys('ada')
+myKey = getKeys('mc')
 """
- "alias": "ada",
+ "alias": "mc",
  "sk": "fc487a5adcb6fe82ac8de12f2c6cffa2b395bae0b694591c1a9ef973552e4030",
  "pk": "c621e37b2be6e83ce77b539a90f6fc99a218986499a5b7565283eb9ec369f5c08f527af268fa9a274613804f8773b042e1866a84c705ddc18bb6f05598d7456a",
  "pkh": "1G8RdTC6nSmuLVkBzkWEaWzqqsqM8f98cU"

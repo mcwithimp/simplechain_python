@@ -2,4 +2,3 @@
 - UTxO Double Spending
 - Rpc tx
 - Rpc getbalanc
-- Rpc getHead
