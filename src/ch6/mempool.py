@@ -5,3 +5,7 @@ mempool: Iterable[Transaction] = []
 
 def getMempool():
     return mempool
+
+def insertToMempool(tx):
+    global mempool
+    mempool.append(tx)

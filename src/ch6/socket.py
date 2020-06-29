@@ -1,9 +1,10 @@
 import json
 import websockets
 from .blockchain import getHead, getBlockchain, replaceChain, pushBlock
-from .verifier import verifyChain
+from .verifier import verifyChain, verifyTx
 from .miner import minerInterrupt
 from .utxo import updateUTxOContext
+from .mempool import getMempool, insertToMempool
 from typing import TypedDict, Iterable, Dict
 import os
 import asyncio
@@ -151,11 +152,22 @@ async def handler(websocket, path):
 
             elif msgType == 'TransactionInjected':
                 # verify tx 후 mempool에 inject
-                pass
+                tx = body
+                if verifyTx(tx) is False:
+                    print("Injected Tx is not valid")
+                    pass
+
+                injectToMempool(tx)
+
             elif msgType == 'MempoolRequest':
-                pass
+                mempool = getMempool()
+                await websocket.send(createMessage('MempoolResponse', mempool))
+
             elif msgType == 'MempoolResponse':
-                pass
+                mempoolResponse = body
+                for tx in mempoolResponse:
+                    insertToMempool(tx)
+
             else:
                 print("Oops")
 
