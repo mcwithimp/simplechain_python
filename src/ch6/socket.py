@@ -23,40 +23,41 @@ possible message
 
 peers = {}
 
+
+def getPeers():
+    global peers
+    return peers
+
+
 PORT = os.environ.get('PORT', 9999)
 
 
-def bootstrap(address: str, port: str):
-    eventloop = asyncio.get_event_loop()
+async def bootstrap(address: str, port: str):
+    global peers
+    print(f'node is now bootstrapping, peer={address}:{port}')
+    peerWebsocket = await websockets.connect(uri=f'ws://{address}:{port}')
+    peers[address] = peerWebsocket
 
-    async def init():
-        print(f'node is now bootstrapping, peer={address}:{port}')
-        peerWebsocket = await websockets.connect(uri=f'ws://{address}:{port}')
-        peers[address] = peerWebsocket
+    await peerWebsocket.send(
+        createMessage(
+            msgType='PeerRequest',
+            data=PORT)
+    )
 
-        print("sending sync request")
-        await peerWebsocket.send(
-            createMessage(
-                msgType='PeerRequest',
-                data=None)
-        )
+    await peerWebsocket.send(
+        createMessage(
+            msgType='SyncRequest',
+            data=getHead()['header']))
 
-        await peerWebsocket.send(
-            createMessage(
-                msgType='SyncRequest',
-                data=getHead()['header']))
+    try:
+        await handler(peerWebsocket, peerWebsocket.path)
+    except BaseException:
+        del peers[address]
 
-        try:
-            await handler(peerWebsocket, peerWebsocket.path)
-        except BaseException:
-            del peers[address]
-
-    eventloop.create_task(init())
 
 
 async def handler(websocket, path):
     try:
-        global peers
         while True:
             payload = await websocket.recv()
             msg = json.loads(payload)
@@ -64,25 +65,31 @@ async def handler(websocket, path):
             msgType = msg['msgType']
             body = msg['body']
 
-            print(f"[{websocket.remote_address[0]}<=] {msgType} ({body}) ")
+            print(f"[{websocket.remote_address[0]}<=] {msgType}")
 
             if msgType == 'PeerRequest':
+                global peers
                 await websocket.send(createMessage('PeerResponse', list(peers)))
-                peers[f'{websocket.remote_address[0]}:{websocket.remote_address[1]}'] = websocket
+                port = body
+                peers[f'{websocket.remote_address[0]}:{port}'] = websocket
+                print(f"Set peer {websocket.remote_address[0]}: {port}")
 
             elif msgType == 'PeerResponse':
                 newPeers = body
                 for peer in newPeers:
                     if peer in peers:
                         continue
+
                     split = peer.split(':')
+
+                    # 만약 나이면 연결하지 않는다
+                    if split[1] == PORT:
+                        continue
                     bootstrap(address=split[0], port=split[1])
 
             elif msgType == 'SyncRequest':
                 localHeader = getHead()['header']
                 remoteHeader = body
-
-                print("SyncRequest", localHeader, remoteHeader)
 
                 # 상대방 블록이 내거보다 높으면 싱크 리퀘스트를 보낸다
                 if remoteHeader["level"] > localHeader["level"]:
@@ -99,13 +106,14 @@ async def handler(websocket, path):
             elif msgType == 'SyncResponse':
                 remoteBlockchain = body
 
-                # 상대 피어와 체인 레벨이 같은 경우
-                if remoteBlockchain is None:
-                    return
+                # # 상대 피어와 체인 레벨이 같은 경우
+                # if remoteBlockchain is None:
+                #     return
 
-                # 상대 피어의 체인 레벨이 높은 경우
+                # # 상대 피어의 체인 레벨이 높은 경우
                 # 간단한 verify 진행 후 블록체인을 replace한다.
                 if verifyChain(remoteBlockchain) is True:
+                    minerInterrupt.set()
                     replaceChain(remoteBlockchain)
 
             # 블록이 Inject 된 경우, 채굴을 잠시 멈추고 Block을 push 한 뒤
@@ -141,6 +149,7 @@ async def handler(websocket, path):
                 updateUTxOContext(level=body["header"]["level"], block=body)
 
             elif msgType == 'TransactionInjected':
+                # verify tx 후 mempool에 inject
                 pass
             elif msgType == 'MempoolRequest':
                 pass
@@ -161,7 +170,7 @@ class Message(TypedDict):
 
 def createMessage(msgType: str, data: object):
     msg = json.dumps(Message(msgType=msgType, body=data))
-    print(f"[=>] {msgType}", msg)
+    print(f"[=>] {msgType}")
     return msg
 
 

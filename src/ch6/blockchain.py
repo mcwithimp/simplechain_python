@@ -67,7 +67,7 @@ def createGenesisBlock() -> Block:
     header = BlockHeader(
         level=0,
         previousHash='0' * 64,
-        timestamp=1593441559,
+        timestamp=1593443107,
         miner='1G8RdTC6nSmuLVkBzkWEaWzqqsqM8f98cU',
         merkleRoot=generateHash(genesisTx),
         nonce=0,
@@ -101,10 +101,15 @@ def getHead() -> Block:
 
 def pushBlock(block: Block):
     getBlockchain().append(block)
+    for b in getBlockchain():
+        print(b["header"]["level"])
+
     broadcastBlock(block)
+    # after push
 
 
 def replaceChain(nextBlockchain: Blockchain):
+    global blockchain
     blockchain = nextBlockchain
     return blockchain
 

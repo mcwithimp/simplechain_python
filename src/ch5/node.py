@@ -3,11 +3,13 @@ from .blockchain import Block, pushBlock, getHead, getBlockchain, BlockHeader, g
 from .transaction import createCoinbaseTx, Transaction
 from ..lib.crypto import generateHash
 from .miner import mine, minerInterrupt
+from .rpc import app
+
 
 # 웹소켓용
 import asyncio
 import websockets
-from .socket import handler, createMessage
+from .socket import bootstrap, handler, createMessage
 import json
 import os
 import threading
@@ -18,90 +20,86 @@ BOOTSTRAP_PEER = os.environ.get('BOOTSTRAP_PEER', '')
 mempool: Iterable[Transaction] = []
 
 
-def node():
-    eventloop = asyncio.get_event_loop()
-    # asyncio.get_event_loop().run_until_complete(start_server)
-    # asyncio.get_event_loop().run_forever()
-    # 부트스트랩
-    bootstrapThread = bootstrap()
+async def node():
+    # 채굴 쓰레드에서 채굴 완료 이벤트를 받을 이벤트 큐 생성
+    q = asyncio.Queue()
+    loop = asyncio.get_event_loop()
 
     # 채굴 쓰레드 생성
-    threading.Thread(target=minerThread, daemon=True).start()
+    threading.Thread(target=minerThread, daemon=True, args=(q,loop,)).start()
 
-    # 소켓 서버 쓰레드
-    sock = socketThread()
+    await asyncio.gather(
+        bootstrapTask(),
+        networkTask(),
+        pushBlockTask(q)
+    )
 
-    eventloop.run_until_complete(bootstrapThread)
-    eventloop.run_until_complete(sock)
-    eventloop.run_forever()
-
-
-async def bootstrap():
+def bootstrapTask():
     if any(BOOTSTRAP_PEER):
-        print("sibal")
-        peerWebsocket = await websockets.connect(uri=f'ws://{BOOTSTRAP_PEER}:{PORT}')
+        split = BOOTSTRAP_PEER.split(':')
+        return bootstrap(address=split[0], port=split[1])
 
-        print("sending sync request")
-        await peerWebsocket.send(
-            createMessage(
-                msgType='PeerRequest',
-                data=None)
-        )
-
-        await peerWebsocket.send(
-            createMessage(
-                msgType='SyncRequest',
-                data=getHead()['header']))
-
-        try:
-            await handler(peerWebsocket, peerWebsocket.path)
-        except BaseException:
-            print("peer disconnected")
+    # never resolving 
+    return asyncio.Future()
 
 
-def socketThread():
+def networkTask():
+    print(f"wss at {PORT}")
     return websockets.serve(handler, "0.0.0.0", PORT)
 
-
-def minerThread():
+async def pushBlockTask(queue):
     while True:
-        currentHead = getHead()
-        currentLevel = currentHead["header"]["level"]
-        coinbaseTx = createCoinbaseTx(
-            pk=myKey["pk"],
-            sk=myKey["sk"],
-            level=currentLevel + 1)
-        transactions = [coinbaseTx, *mempool]
+        nextBlock = await queue.get()
+        pushBlock(nextBlock)
+        queue.task_done()
 
-        # 이번에 생성하는 블록 헤더를 만든다
-        header = BlockHeader(
-            level=currentLevel + 1,
-            previousHash=currentHead["hash"],
-            timestamp=getTimestamp(),
-            miner=myKey["pk"],
-            merkleRoot=generateHash(transactions),
-            nonce=0,
-            difficulty=currentHead["header"]["difficulty"]
-        )
 
-        # 채굴 시작
-        print("Mining", currentHead["header"]["level"])
-        mineResult = mine(header, getBlockchain())
+def minerThread(queue,loop):
 
-        # 다른 노드가 채굴을 먼저 완료헀을 때에는 mine() 함수가 None을 리턴함
-        # 이럴 경우 pushBlock을 하지 않는다
-        if mineResult is None:
-            pass
+    async def miner():
+        while True:
+            asyncio.run_coroutine_threadsafe(queue.join(), loop=loop).result()
 
-        # 내가 찾은 블록일때만 pushBlock 실행
-        block = Block(
-            hash=mineResult["blockHash"],
-            header=mineResult["header"],
-            transactions=transactions
-        )
+            currentHead = getHead()
+            currentLevel = currentHead["header"]["level"]
+            coinbaseTx = createCoinbaseTx(
+                pk=myKey["pk"],
+                sk=myKey["sk"],
+                level=currentLevel + 1)
+            transactions = [coinbaseTx, *mempool]
 
-        pushBlock(block)
+            # 이번에 생성하는 블록 헤더를 만든다
+            header = BlockHeader(
+                level=currentLevel + 1,
+                previousHash=currentHead["hash"],
+                timestamp=getTimestamp(),
+                miner=myKey["pk"],
+                merkleRoot=generateHash(transactions),
+                nonce=0,
+                difficulty=currentHead["header"]["difficulty"]
+            )
+
+            # 채굴 시작
+            print("Mining", currentHead["header"]["level"])
+            mineResult = mine(header, getBlockchain())
+
+            # 다른 노드가 채굴을 먼저 완료헀을 때에는 mine() 함수가 None을 리턴함
+            # 이럴 경우 pushBlock을 하지 않는다
+            if mineResult is None:
+                continue
+
+            # 내가 찾은 블록일때만 pushBlock 실행
+            block = Block(
+                hash=mineResult["blockHash"],
+                header=mineResult["header"],
+                transactions=transactions
+            )
+
+            # 만든 블록을 큐에 삽입
+            asyncio.run_coroutine_threadsafe(queue.put(block), loop=loop).result()
+
+    asyncio.run(miner())
 
 
 if __name__ == '__main__':
-    node()
+    asyncio.run(node())

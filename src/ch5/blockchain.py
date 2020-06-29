@@ -103,6 +103,7 @@ def pushBlock(block: Block):
 
 
 def replaceChain(nextBlockchain: Blockchain):
+    global blockchain
     blockchain = nextBlockchain
     return blockchain
 

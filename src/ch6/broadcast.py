@@ -1,20 +1,29 @@
+import asyncio
 
 
 def broadcast(message):
-    from .socket import peers, createMessage
-    print("[=>*] Broadcasting ...")
-    for (_, sock) in peers.items():
-        sock.send(message)
-    print("[=>*] ============ Broadcasting")
+    from .socket import getPeers, createMessage
 
+    async def send():
+        print(f"[=>*] Broadcasting to peers", getPeers())
+        for (_, sock) in getPeers().items():
+            await sock.send(message)
+
+    asyncio.ensure_future(send())
 
 def broadcastBlock(block):
-    from .socket import peers, createMessage
+    from .socket import createMessage
 
-    broadcast(createMessage('BlockInjected', block))
+    broadcast(
+        createMessage(
+            'BlockInjected',
+            block))
 
 
 def broadcastTx(tx):
-    from .socket import peers, createMessage
+    from .socket import createMessage
 
-    broadcast(createMessage('TransactionInjected', tx))
+    broadcast(
+        createMessage(
+            'TransactionInjected',
+            tx))
