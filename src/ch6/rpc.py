@@ -1,5 +1,4 @@
-from argparse import ArgumentParser
-from flask import Flask
+from flask import Flask, request
 from .blockchain import getHead, getBlockchain
 from datetime import datetime
 
@@ -17,16 +16,14 @@ def head():
     return getHead()
 
 
-@app.route('/head/header', methods=['GET'])
-def headHeader():
-    return getHead()['header']
+@app.route('/transfer', methods=['POST'])
+def transfer():
+    src = request.form['from']
+    dst = request.form['to']
+    amount = request.form['amount']
+    print(src, dst, amount)
+    return 'success!'
 
-# parser = ArgumentParser()
-# parser.add_argument(
-#     '-p',
-#     '--port',
-#     default=1337,
-#     type=int,
-#     help='port to listen on')
-# args = parser.parse_args()
-# port = args.port
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=1337)

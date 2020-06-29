@@ -43,7 +43,7 @@ def node():
 def bootstrapThread():
     if any(BOOTSTRAP_PEER):
         split = BOOTSTRAP_PEER.split(':')
-        bootstrap(address=split[0], address=split[1])
+        bootstrap(address=split[0], port=split[1])
 
 
 def socketThread():
