@@ -11,7 +11,7 @@ if command[0] == 'transfer':
             data = {
                 'from': command[3],
                 'to': command[5],
-                'amount': float(command[1])
+                'amount': int(command[1], 10)
             }
             res = requests.post(URL + 'transfer', data=data)
             print(res.text)

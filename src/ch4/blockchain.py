@@ -102,5 +102,12 @@ def pushBlock(block: Block):
     getBlockchain().append(block)
 
 
+def replaceChain(nextBlockchain: Blockchain):
+    global blockchain
+    blockchain = nextBlockchain
+    return blockchain
+
+
+
 if __name__ == "__main__":
     print(json.dumps(blockchain, indent=2))

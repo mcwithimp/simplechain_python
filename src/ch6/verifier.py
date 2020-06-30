@@ -67,7 +67,8 @@ def verifyChain(candidateChain) -> bool:
         elif (currentBlock['header']['previousHash'] != previousBlock['hash']):
             print("Previous hash is not valid!")
             return False
-        # elif (verifyTimestamp(previousBlock['header']['timestamp'], currentBlock['header']['timestamp']) == False):
+        # elif (verifyTimestamp(previousBlock['header']['timestamp'],
+        #       currentBlock['header']['timestamp']) == False):
         #     print("Timestamp value is not valid!")
         #     return False
         elif (verifyBlock(currentBlock) == False):

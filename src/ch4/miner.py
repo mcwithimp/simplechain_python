@@ -2,6 +2,9 @@ from ..lib.crypto import sha256, generateHash
 import json
 import threading
 
+# 마이닝 쓰레드 이벤트 핸들러
+minerInterrupt = threading.Event()
+
 # 블록헤더 + nonce를 가지고 difficulty target 이하의 값을 찾는
 # 해시를 만든다
 
@@ -11,7 +14,7 @@ with open(PARAMS_PATH, 'r') as params_file:
     params = json.load(params_file)
 
 
-def mine(header, blockchain, minerInterrupt):
+def mine(header, blockchain):
     # 마이닝 쓰레드 초기화
     minerInterrupt.clear()
 

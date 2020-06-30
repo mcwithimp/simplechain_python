@@ -1,10 +1,8 @@
 import json
 import websockets
 from .blockchain import getHead, getBlockchain, replaceChain, pushBlock
-from .verifier import verifyChain, verifyTx
 from .miner import minerInterrupt
 from .utxo import updateUTxOContext
-from .mempool import getMempool, insertToMempool
 from typing import TypedDict, Iterable, Dict
 import os
 import asyncio
@@ -79,14 +77,12 @@ async def handler(websocket, path):
             elif msgType == 'PeerResponse':
                 newPeers = body
                 for peer in newPeers:
-
-                    # 이미 접속 한 피어인 경우 건너뛴다
                     if peer in peers:
                         continue
 
                     split = peer.split(':')
 
-                    # 만약 나이면 연결하지 않는다, localhost 가정
+                    # 만약 나이면 연결하지 않는다
                     if split[1] == PORT:
                         continue
                     bootstrap(address=split[0], port=split[1])
@@ -110,7 +106,7 @@ async def handler(websocket, path):
             elif msgType == 'SyncResponse':
                 remoteBlockchain = body
 
-                # # 상대 피어와 체인 레벨이 같은 경우
+                # 상대 피어와 체인 레벨이 같은 경우
                 if remoteBlockchain is None:
                     continue
 
@@ -131,7 +127,7 @@ async def handler(websocket, path):
                 if body["header"]["level"] > localHead["header"]["level"] + 1:
                     await websocket.send(createMessage('SyncRequest', localHead["header"]))
                     minerInterrupt.set()
-                    pass
+                    continue
 
                 # 만약 받아온 블록의 level이 나의 최신 block의 레벨보다 작거나 같다면
                 # 아무것도 하지 않는다 (내 체인이 더 길거나 경합상황)
@@ -141,7 +137,7 @@ async def handler(websocket, path):
                 # 받아온 블록을 현재 블록체인에 붙여보고,
                 # 만약 verify에 통과하지 못한다면 에러메시지를 띄우고
                 # 핸들러를 종료한다
-                elif verifyBlock(body) is False:
+                elif verifyChain([body]) is False:
                     print("Injected block is not valid")
                     pass
 
@@ -149,27 +145,18 @@ async def handler(websocket, path):
                 # block을 push하면서, UTxOSet을 업데이트 한다.
                 # 이 때, Injected 된 블록의 Tx에서 이미 사용된 UTxO (새 블록의 txIns)는
                 # 로컬 UTxOContext 에서 삭제해야 한다. (updateUTxOContext 변경)
-                else:
+                else: 
                     pushBlock(body)
                     updateUTxOContext(level=body["header"]["level"], block=body)
 
             elif msgType == 'TransactionInjected':
-                # verify tx 후 mempool에 inject
-                tx = body
-                if verifyTx(tx) is False:
-                    print("Injected Tx is not valid")
-                    pass
-
-                injectToMempool(tx)
+                pass
 
             elif msgType == 'MempoolRequest':
-                mempool = getMempool()
-                await websocket.send(createMessage('MempoolResponse', mempool))
+                pass
 
             elif msgType == 'MempoolResponse':
-                mempoolResponse = body
-                for tx in mempoolResponse:
-                    insertToMempool(tx)
+                pass
 
             else:
                 print("Oops")

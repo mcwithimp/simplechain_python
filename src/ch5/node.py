@@ -46,6 +46,7 @@ def networkTask():
     print(f"wss at {PORT}")
     return websockets.serve(handler, "0.0.0.0", PORT)
 
+
 async def pushBlockTask(queue):
     while True:
         nextBlock = await queue.get()
@@ -55,7 +56,7 @@ async def pushBlockTask(queue):
 
 def minerThread(queue,loop):
 
-    async def miner():
+    def miner():
         while True:
             asyncio.run_coroutine_threadsafe(queue.join(), loop=loop).result()
 
@@ -96,8 +97,6 @@ def minerThread(queue,loop):
 
             # 만든 블록을 큐에 삽입
             asyncio.run_coroutine_threadsafe(queue.put(block), loop=loop).result()
-
-    asyncio.run(miner())
 
 
 if __name__ == '__main__':

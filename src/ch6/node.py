@@ -3,8 +3,8 @@ from .blockchain import Block, pushBlock, getHead, getBlockchain, BlockHeader, g
 from .transaction import createCoinbaseTx, Transaction
 from ..lib.crypto import generateHash
 from .miner import mine, minerInterrupt
-from .mempool import getMempool
-from .rpc import app
+from .mempool import getMempool, removeFromMempool
+from .rpc import run
 
 
 # 웹소켓용
@@ -25,13 +25,18 @@ async def node():
     loop = asyncio.get_event_loop()
 
     # 채굴 쓰레드 생성
-    threading.Thread(target=minerThread, daemon=True, args=(q,loop,)).start()
+    t1 = threading.Thread(target=minerThread, daemon=True, args=(q,loop,)).start()
+    t2 = threading.Thread(target=rpcThread, daemon=False, args=(loop,)).start()
 
     await asyncio.gather(
         bootstrapTask(),
         networkTask(),
-        pushBlockTask(q)
+        pushBlockTask(q),
     )
+
+    t1.join()
+    t2.join()
+
 
 def bootstrapTask():
     if any(BOOTSTRAP_PEER):
@@ -52,9 +57,10 @@ async def pushBlockTask(queue):
         pushBlock(nextBlock)
         queue.task_done()
 
+def rpcThread(loop):
+    run(loop)
 
 def minerThread(queue,loop):
-
     async def miner():
         while True:
             asyncio.run_coroutine_threadsafe(queue.join(), loop=loop).result()
@@ -93,6 +99,12 @@ def minerThread(queue,loop):
                 header=mineResult["header"],
                 transactions=transactions
             )
+
+            print(f"[miner] block found! {block}")
+
+            # mempool clear
+            for tx in transactions:
+                removeFromMempool(tx)
 
             # 만든 블록을 큐에 삽입
             asyncio.run_coroutine_threadsafe(queue.put(block), loop=loop).result()

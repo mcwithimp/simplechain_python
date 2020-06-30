@@ -101,9 +101,6 @@ def getHead() -> Block:
 
 def pushBlock(block: Block):
     getBlockchain().append(block)
-    for b in getBlockchain():
-        print(b["header"]["level"])
-
     broadcastBlock(block)
     # after push
 

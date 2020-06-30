@@ -109,8 +109,8 @@ async def handler(websocket, path):
                 remoteBlockchain = body
 
                 # # 상대 피어와 체인 레벨이 같은 경우
-                # if remoteBlockchain is None:
-                #     return
+                if remoteBlockchain is None:
+                    continue
 
                 # # 상대 피어의 체인 레벨이 높은 경우
                 # 간단한 verify 진행 후 블록체인을 replace한다.
@@ -129,7 +129,7 @@ async def handler(websocket, path):
                 if body["header"]["level"] > localHead["header"]["level"] + 1:
                     await websocket.send(createMessage('SyncRequest', localHead["header"]))
                     minerInterrupt.set()
-                    return
+                    continue
 
                 # 만약 받아온 블록의 level이 나의 최신 block의 레벨보다 작거나 같다면
                 # 아무것도 하지 않는다 (내 체인이 더 길거나 경합상황)
@@ -139,7 +139,8 @@ async def handler(websocket, path):
                 # 받아온 블록을 현재 블록체인에 붙여보고,
                 # 만약 verify에 통과하지 못한다면 에러메시지를 띄우고
                 # 핸들러를 종료한다
-                elif verifyChain([body]) is False:
+                # level이 1 이상 벌어진 경우는 이미 예외처리가 된 경우.
+                elif verifyBlock(body) is False:
                     print("Injected block is not valid")
                     pass
 
@@ -147,8 +148,9 @@ async def handler(websocket, path):
                 # block을 push하면서, UTxOSet을 업데이트 한다.
                 # 이 때, Injected 된 블록의 Tx에서 이미 사용된 UTxO (새 블록의 txIns)는
                 # 로컬 UTxOContext 에서 삭제해야 한다. (updateUTxOContext 변경)
-                pushBlock(body)
-                updateUTxOContext(level=body["header"]["level"], block=body)
+                else: 
+                    pushBlock(body)
+                    updateUTxOContext(level=body["header"]["level"], block=body)
 
             elif msgType == 'TransactionInjected':
                 # verify tx 후 mempool에 inject
